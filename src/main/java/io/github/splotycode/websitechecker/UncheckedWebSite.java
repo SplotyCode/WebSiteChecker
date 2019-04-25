@@ -1,6 +1,7 @@
 package io.github.splotycode.websitechecker;
 
 import io.github.splotycode.mosaik.util.Pair;
+import lombok.Getter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -14,26 +15,27 @@ import java.util.*;
 
 import static io.github.splotycode.websitechecker.WebSiteChecker.toUrl;
 
+@Getter
 public class UncheckedWebSite implements Serializable {
 
     protected Set<String> callers = new HashSet<>();
     protected String url;
 
-    public UncheckedWebSite(String url) {
+    private UncheckedWebSite(String url) {
         this.url = url;
     }
 
-    public UncheckedWebSite(String url, String caller) {
+    UncheckedWebSite(String url, String caller) {
         addCaller(caller);
         this.url = url;
     }
 
-    public UncheckedWebSite(String url, Set<String> caller) {
+    UncheckedWebSite(String url, Set<String> caller) {
         callers.addAll(caller);
         this.url = url;
     }
 
-    public HashMap<String, UncheckedWebSite> getNewSites(InputStream inputStream, WebSiteChecker checker) throws IOException {
+    private HashMap<String, UncheckedWebSite> getNewSites(InputStream inputStream, WebSiteChecker checker) throws IOException {
         HashMap<String, UncheckedWebSite> nowUnchecked = new HashMap<>();
         Document document = Jsoup.parse(inputStream, "UTF-8", url);
         for (Element element : document.select("link[rel=alternate]")) {
@@ -51,7 +53,7 @@ public class UncheckedWebSite implements Serializable {
         return nowUnchecked;
     }
 
-    public Pair<ScannedWebsite, HashMap<String, UncheckedWebSite>> scan(WebSiteChecker checker) {
+    Pair<ScannedWebsite, HashMap<String, UncheckedWebSite>> scan(WebSiteChecker checker) {
         HttpURLConnection http = null;
         HashMap<String, UncheckedWebSite> nowUnchecked = null;
         try {
@@ -92,11 +94,7 @@ public class UncheckedWebSite implements Serializable {
         return null;
     }
 
-    public Set<String> getCallers() {
-        return callers;
-    }
-
-    public void addCaller(String url) {
+    void addCaller(String url) {
         callers.add(url);
     }
 

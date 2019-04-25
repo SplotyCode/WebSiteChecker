@@ -1,14 +1,18 @@
 package io.github.splotycode.websitechecker;
 
+import java.io.File;
 import java.net.URL;
 import java.util.function.Predicate;
 
 public class MozChecker implements Predicate<URL> {
 
     public static void main(String[] args) throws Exception {
-        WebSiteChecker checker = new WebSiteChecker(new MozChecker(), "https://www.mozilla.org").load();
-        checker.check();
+        WebSiteChecker checker = new WebSiteChecker(new MozChecker(), "https://www.mozilla.org");
         Runtime.getRuntime().addShutdownHook(new Thread(checker::disableAutosave));
+                checker.load()
+                .initAutoSave(new File("data.txt"), true, 2000)
+                .check()
+                .printResults(System.out);
     }
 
     @Override
