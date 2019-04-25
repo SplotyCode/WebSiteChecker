@@ -3,13 +3,11 @@ package io.github.splotycode.websitechecker;
 import io.github.splotycode.mosaik.util.ExceptionUtil;
 import io.github.splotycode.mosaik.util.Pair;
 import io.github.splotycode.mosaik.util.StringUtil;
-import io.github.splotycode.mosaik.util.ThreadUtil;
 import io.github.splotycode.mosaik.util.condition.Conditions;
 
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -27,20 +25,6 @@ public class WebSiteChecker {
             ExceptionUtil.throwRuntime(e);
             return null;
         }
-    }
-
-
-    public static void main(String[] args) throws Exception {
-        WebSiteChecker checker = new WebSiteChecker(new MozFilter(), "https://www.mozilla.org").load();
-        checker.check();
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            checker.running = false;
-            try {
-                checker.autoSave.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }));
     }
 
     public WebSiteChecker(String... baseUrl) {
@@ -81,29 +65,14 @@ public class WebSiteChecker {
         return this;
     }
 
-    private boolean running = true;
-    private AutoSave autoSave = new AutoSave();
+    private AutoSave autoSave = new AutoSave(this);
 
-    public class AutoSave extends Thread {
-
-        @Override
-        public void run() {
-            while (running) {
-                try {
-                    printResults(new PrintStream(new FileOutputStream("results.txt", false)));
-                    ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("data.txt"));
-                    oos.writeObject(checked);
-                    oos.writeObject(unchecked);
-                    oos.flush();
-                    oos.close();
-                    ThreadUtil.sleep(2000);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (ConcurrentModificationException e) {
-                    ThreadUtil.sleep(200);
-                }
-            }
-        }
+    public WebSiteChecker disableAutosave() {
+        autoSave.running = false;
+        try {
+            autoSave.join();
+        } catch (InterruptedException ignored) {}
+        return this;
     }
 
     public Predicate<URL> getFilter() {

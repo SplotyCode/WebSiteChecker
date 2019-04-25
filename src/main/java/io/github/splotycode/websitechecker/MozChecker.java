@@ -3,7 +3,14 @@ package io.github.splotycode.websitechecker;
 import java.net.URL;
 import java.util.function.Predicate;
 
-public class MozFilter implements Predicate<URL> {
+public class MozChecker implements Predicate<URL> {
+
+    public static void main(String[] args) throws Exception {
+        WebSiteChecker checker = new WebSiteChecker(new MozChecker(), "https://www.mozilla.org").load();
+        checker.check();
+        Runtime.getRuntime().addShutdownHook(new Thread(checker::disableAutosave));
+    }
+
     @Override
     public boolean test(URL url) {
         if (url == null) return false;
